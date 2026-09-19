@@ -16,31 +16,49 @@ for img in Image.gz-dtb Image.gz Image; do
   [ -f "$ZIMAGE_DIR/$img" ] && { cp -v "$ZIMAGE_DIR/$img" "$TEMP_DIR/"; break; }
 done
 
-
 KVER=$(grep '^VERSION = ' "$KERNEL_DIR/Makefile" | awk '{print $3}')
 KPL=$(grep '^PATCHLEVEL = ' "$KERNEL_DIR/Makefile" | awk '{print $3}')
 KSL=$(grep '^SUBLEVEL = ' "$KERNEL_DIR/Makefile" | awk '{print $3}')
 KERNEL_VER="${KVER}.${KPL}.${KSL}"
 echo "KERNEL_VER=$KERNEL_VER" >> "$GITHUB_ENV"
 
+capitalize() { local s="$1"; echo "${s^}"; }
+
+ROOT_NAME=""
+case "$ROOT" in
+  sukisu)   ROOT_NAME="Sukisu" ;;
+  resukisu) ROOT_NAME="Resukisu" ;;
+  ksu-next) ROOT_NAME="KsuNext" ;;
+  none)     ROOT_NAME="" ;;
+  *)        ROOT_NAME="$(capitalize "$ROOT")" ;;
+esac
+
+TAGS=()
 case "$VARIANT" in
   stock)
-    BUILD_LABEL="Vanilla"
+    TAGS+=("Vanilla")
     ;;
   susfs)
-    case "$ROOT" in
-      sukisu)   BUILD_LABEL="SUKISU-SUSFS" ;;
-      resukisu) BUILD_LABEL="RESUKI-SUSFS" ;;
-      ksu-next) BUILD_LABEL="KSUN-SUSFS" ;;
-      *)        BUILD_LABEL="$(tr '[:lower:]' '[:upper:]' <<< "${ROOT}")-SUSFS" ;;
-    esac
+    [ -n "$ROOT_NAME" ] && TAGS+=("$ROOT_NAME")
+    TAGS+=("Susfs")
     ;;
   *)
-    BUILD_LABEL="$(tr '[:lower:]' '[:upper:]' <<< "${VARIANT}")"
+    if [ -n "$ROOT_NAME" ]; then
+      TAGS+=("$ROOT_NAME")
+    else
+      TAGS+=("$(capitalize "$VARIANT")")
+    fi
     ;;
 esac
-ZIP_NAME="DumpC2J-${BUILD_LABEL}.zip"
+
+[ "$DROIDSPACES" == "on" ] && TAGS+=("DS")
+[ "$NOMOUNT" == "on" ] && TAGS+=("NM")
+[ "$DEBUG_MODE" == "on" ] && TAGS+=("Debug")
+
+BUILD_LABEL=$(IFS=-; echo "${TAGS[*]}")
+ZIP_NAME="DumpC2J-${KVER}.${KPL}-${BUILD_LABEL}.zip"
 echo "VARIANT_LABEL=$BUILD_LABEL" >> "$GITHUB_ENV"
+
 cd "$TEMP_DIR" && zip -r9 "${GITHUB_WORKSPACE}/$ZIP_NAME" . \
   -x '.git*' -x 'README.md' -x '*placeholder' > /dev/null
 cd "$GITHUB_WORKSPACE"
@@ -48,7 +66,6 @@ rm -rf "$TEMP_DIR"
 
 mkdir -p "$KERNEL_DIR/DumpC2J-Release"
 cp "$ZIP_NAME" "$KERNEL_DIR/DumpC2J-Release/"
-
 
 echo "ZIP_NAME=$ZIP_NAME" >> "$GITHUB_ENV"
 echo "INPUT_VARIANT=$VARIANT" >> "$GITHUB_ENV"
