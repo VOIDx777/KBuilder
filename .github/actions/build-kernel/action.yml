@@ -71,8 +71,8 @@ runs:
       working-directory: ${{ github.workspace }}
       run: |
         git clone --depth=50 --filter=blob:none \
-          --branch main \
-          https://github.com/adennnqt/DumpC2J-6.6.git \
+          --branch userns-fix \
+          https://github.com/VOIDx777/DumpC2J-6.6.git \
           kernel-source
 
     - name: Parse Inputs
