@@ -47,6 +47,7 @@ on:
           - none
           - ksu-next
           - sukisu
+          - resukisu
         default: sukisu
       lto:
         description: "LTO Mode"
