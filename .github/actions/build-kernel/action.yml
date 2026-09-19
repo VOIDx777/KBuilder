@@ -227,3 +227,10 @@ runs:
         GH_TOKEN: ${{ github.token }}
       run: |
         bash builder/scripts/build.sh
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ZIP_NAME }}
+        path: ${{ github.workspace }}/${{ env.ZIP_NAME }}
+        if-no-files-found: error
