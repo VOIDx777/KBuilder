@@ -127,9 +127,3 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash builder/scripts/merge_ccache.sh "$CCACHE_ASSET" "$CCACHE_OUT_DIR"
 
-      - name: Notify Telegram
-        if: success()
-        env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: bash builder/scripts/notify_telegram.sh
